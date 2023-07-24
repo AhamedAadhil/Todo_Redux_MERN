@@ -1,35 +1,35 @@
 import React, { useEffect } from "react";
-import ResponsiveAppBar from "../Components/NavBar";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchTodos } from "../Redux/Todo";
-import { Typography, Grid, Box, Container } from "@mui/material";
-import FloatingActionButtons from "../Components/FAB";
+import NavBar from "../Components/NavBar";
 import TodoCard from "../Components/Card";
+import { Typography, Grid, Box, Container } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchCompletedTodos } from "../Redux/Todo";
 
-const Home = () => {
-  const dispatch = useDispatch();
-  const todos = useSelector((state) => state.todos.todos);
+const Completed = () => {
+  const todos = useSelector((state) => state.todos.completedTodos);
   const loading = useSelector((state) => state.todos.loading);
   const error = useSelector((state) => state.todos.error);
+
   const jwtToken = useSelector((state) => state.user.token);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchTodos(jwtToken));
+    dispatch(fetchCompletedTodos(jwtToken));
   }, [dispatch, jwtToken]);
 
   return (
     <div>
-      <ResponsiveAppBar />
+      <NavBar />
       <Box mt={4} px={2}>
         <Container maxWidth="lg">
           {loading ? (
             <Typography>Loading...</Typography>
           ) : error ? (
-            <Typography> {error}</Typography>
+            <Typography>Error: {error}</Typography>
           ) : (
             <Grid container spacing={2}>
               {todos && todos.length === 0 ? (
-                <Typography>No notes found for this user!</Typography>
+                <Typography>No completed notes found for this user!</Typography>
               ) : (
                 todos.map((todo, index) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={todo._id}>
@@ -41,9 +41,8 @@ const Home = () => {
           )}
         </Container>
       </Box>
-      <FloatingActionButtons />
     </div>
   );
 };
 
-export default Home;
+export default Completed;
