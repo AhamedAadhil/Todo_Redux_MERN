@@ -15,9 +15,12 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchTodos } from "../Redux/Todo";
+import {
+  fetchTodos,
+  fetchCompletedTodos,
+  fetchIncompletedTodos,
+} from "../Redux/Todo";
 
-// Utility function to generate a random color in RGB format
 const getRandomColor = () => {
   const colors = ["#87CEFA", "#98FB98", "#FFD700", "#FF1493", "#00FFFF"];
   const randomColor = Math.floor(Math.random() * colors.length);
@@ -126,6 +129,8 @@ const TodoCard = ({ todo, index }) => {
         setLoading(false);
         setMsg("Todo Deleted!");
         dispatch(fetchTodos(jwtToken));
+        dispatch(fetchCompletedTodos(jwtToken));
+        dispatch(fetchIncompletedTodos(jwtToken));
       }
     } catch (error) {
       if (
@@ -165,6 +170,8 @@ const TodoCard = ({ todo, index }) => {
           }!`
         );
         dispatch(fetchTodos(jwtToken));
+        dispatch(fetchCompletedTodos(jwtToken));
+        dispatch(fetchIncompletedTodos(jwtToken));
       }
     } catch (error) {
       if (

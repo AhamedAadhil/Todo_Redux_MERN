@@ -7,7 +7,6 @@ export const fetchTodos = createAsyncThunk(
     const response = await axios.get("http://localhost:3001/notes/getAll", {
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
-    console.log(response.data);
     return response.data;
   }
 );
@@ -21,7 +20,6 @@ export const fetchIncompletedTodos = createAsyncThunk(
         headers: { Authorization: `Bearer ${jwtToken}` },
       }
     );
-    console.log(response.data);
     return response.data;
   }
 );
@@ -32,7 +30,6 @@ export const fetchCompletedTodos = createAsyncThunk(
     const response = await axios.get("http://localhost:3001/notes/completed", {
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
-    console.log(response.data);
     return response.data;
   }
 );

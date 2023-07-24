@@ -25,7 +25,7 @@ const Home = () => {
           {loading ? (
             <Typography>Loading...</Typography>
           ) : error ? (
-            <Typography>Error: {error}</Typography>
+            <Typography> {error}</Typography>
           ) : (
             <Grid container spacing={2}>
               {todos && todos.length === 0 ? (
