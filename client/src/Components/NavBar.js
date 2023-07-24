@@ -9,13 +9,20 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import { Alert } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../Redux/User";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from "@mui/material";
 import axios from "axios";
 
 const pages = ["Completed", "InCompleted"];
@@ -25,13 +32,23 @@ function ResponsiveAppBar() {
   const dispatch = useDispatch();
   const jwtToken = useSelector((state) => state.user.token);
   const userData = useSelector((state) => state.user.userData);
+  const userId = userData?.id;
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [errormessage, setErrormessage] = React.useState("");
   const [successmessage, setSuccessmessage] = React.useState("");
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [msg, setMsg] = React.useState("");
+
+  const pageRoutes = {
+    Completed: "/completed",
+    InCompleted: "/incompleted",
+  };
 
   const handleLogout = async () => {
     setErrormessage("");
@@ -85,6 +102,68 @@ function ResponsiveAppBar() {
     }
   };
 
+  const profileSettings = async () => {
+    setMsg("");
+    setLoading(false);
+    if (username.trim() === "") {
+      setMsg("Username Cannot be Empty!");
+      return;
+    }
+    if (username.length < 3 || username.length > 15) {
+      setMsg("Username length between 3-15 char!");
+      return;
+    }
+    if (password.trim() === "") {
+      setMsg("Passowrd Cannot be Empty!");
+      return;
+    }
+    if (password.length < 6) {
+      setMsg("Password min lenght 6 char!");
+      return;
+    }
+    const headers = { Authorization: `Bearer ${jwtToken}` };
+    try {
+      setLoading(true);
+      const response = await axios.patch(
+        `http://localhost:3001/user/profile/update/${userId}`,
+        { name: username, password },
+        { headers }
+      );
+      if (response.status === 200) {
+        setMsg("Account Updated Successfully!");
+        setTimeout(() => {
+          handleLogout();
+        }, 3000);
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setMsg(error.response.data.message);
+        console.error(error.response.data);
+      } else {
+        setMsg("An Error occured when Add! ", error);
+        console.error("An Error occured when Add! ", error);
+      }
+    } finally {
+      setLoading(false);
+      setMsg("");
+      setUsername("");
+      setPassword("");
+    }
+    setIsDialogOpen(false);
+  };
+
+  const handleOpenDialog = () => {
+    if (jwtToken && userId) {
+      setUsername(userData.username);
+      setPassword("");
+      setIsDialogOpen(true);
+    }
+  };
+
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -98,6 +177,10 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const getFirstLetter = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "";
   };
 
   return (
@@ -153,7 +236,7 @@ function ResponsiveAppBar() {
               }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                <MenuItem key={page} onClick={() => navigate(pageRoutes[page])}>
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
@@ -182,7 +265,8 @@ function ResponsiveAppBar() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={handleCloseNavMenu}
+                // onClick={handleCloseNavMenu}
+                onClick={() => navigate(pageRoutes[page])}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
                 {page}
@@ -193,13 +277,9 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <AccountCircleRoundedIcon
-                  fontSize="large"
-                  sx={{ color: "white", mr: 1 }}
-                  alt="Remy Sharp"
-                  src="/static/images/avatar/2.jpg"
-                />
-
+                <Avatar sx={{ mr: 2, bgcolor: "red" }}>
+                  {getFirstLetter(userData?.username)}
+                </Avatar>
                 <Typography
                   variant="h6"
                   sx={{
@@ -236,7 +316,7 @@ function ResponsiveAppBar() {
                 <MenuItem
                   key={setting}
                   onClick={
-                    setting === "Logout" ? handleLogout : handleCloseUserMenu
+                    setting === "Logout" ? handleLogout : handleOpenDialog
                   }
                 >
                   <Typography textAlign="center">{setting}</Typography>
@@ -261,6 +341,52 @@ function ResponsiveAppBar() {
           </p>
         )}
       </Container>
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <DialogTitle>Update Profile</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: "16px" }}
+        >
+          <TextField
+            label="Name"
+            fullWidth
+            InputLabelProps={{ sx: { zIndex: 2, color: "inherit" } }}
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+            }}
+          />
+          <TextField
+            label="Password"
+            fullWidth
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
+          <Typography
+            sx={{
+              alignSelf: "flex-end",
+              color: "black",
+              fontSize: "12px",
+            }}
+          >
+            {loading && <strong>Loading...</strong>}
+          </Typography>
+          <Typography
+            sx={{
+              alignSelf: "flex-end",
+              color: "black",
+              fontSize: "12px",
+            }}
+          >
+            {msg && <strong>{msg}</strong>}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+          <Button onClick={profileSettings}>Update</Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 }

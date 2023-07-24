@@ -19,10 +19,9 @@ import { fetchTodos } from "../Redux/Todo";
 
 // Utility function to generate a random color in RGB format
 const getRandomColor = () => {
-  const r = Math.floor(Math.random() * 256);
-  const g = Math.floor(Math.random() * 256);
-  const b = Math.floor(Math.random() * 256);
-  return `rgb(${r}, ${g}, ${b})`;
+  const colors = ["#87CEFA", "#98FB98", "#FFD700", "#FF1493", "#00FFFF"];
+  const randomColor = Math.floor(Math.random() * colors.length);
+  return colors[randomColor];
 };
 
 function formatTimeToAMPM(timeString) {
@@ -162,7 +161,7 @@ const TodoCard = ({ todo, index }) => {
         setLoading(false);
         setMsg(
           `Note marked as ${
-            updatedTodo.isCompleted ? "completed" : "incomplete"
+            updatedTodo.isCompleted ? "inCompleted" : "complete"
           }!`
         );
         dispatch(fetchTodos(jwtToken));
@@ -185,14 +184,7 @@ const TodoCard = ({ todo, index }) => {
   };
 
   return (
-    <Box
-    //   sx={{
-    //     position: "fixed",
-    //     bottom: "20px", // Adjust this value to set the distance from the bottom
-    //     right: "20px", // Adjust this value to set the distance from the right
-    //     "& > :not(style)": { m: 1 },
-    //   }}
-    >
+    <Box>
       <Card
         variant="outlined"
         sx={{
@@ -200,9 +192,7 @@ const TodoCard = ({ todo, index }) => {
           display: "flex",
           flexDirection: "column",
           backgroundColor: getRandomColor(),
-          cursor: "pointer",
         }}
-        onClick={handleOpenDialog}
       >
         <CardContent
           sx={{
@@ -213,8 +203,9 @@ const TodoCard = ({ todo, index }) => {
         >
           <Typography
             variant="h6"
-            sx={{ alignSelf: "flex-start", color: "white" }}
+            sx={{ alignSelf: "flex-start", color: "white", cursor: "pointer" }}
             textTransform="capitalize"
+            onClick={handleOpenDialog}
           >
             <strong>{todo.title}</strong>
           </Typography>
@@ -230,7 +221,7 @@ const TodoCard = ({ todo, index }) => {
           <Typography
             sx={{
               alignSelf: "flex-end",
-              color: "white",
+              color: "dark grey",
               fontSize: "12px",
             }}
           >

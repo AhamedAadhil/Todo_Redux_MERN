@@ -12,10 +12,37 @@ export const fetchTodos = createAsyncThunk(
   }
 );
 
+export const fetchIncompletedTodos = createAsyncThunk(
+  "todos/fetchIncompleted",
+  async (jwtToken) => {
+    const response = await axios.get(
+      "http://localhost:3001/notes/incompleted",
+      {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      }
+    );
+    console.log(response.data);
+    return response.data;
+  }
+);
+
+export const fetchCompletedTodos = createAsyncThunk(
+  "todos/fetchCompleted",
+  async (jwtToken) => {
+    const response = await axios.get("http://localhost:3001/notes/completed", {
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    console.log(response.data);
+    return response.data;
+  }
+);
+
 const todoSlice = createSlice({
   name: "todos",
   initialState: {
     todos: [],
+    completedTodos: [],
+    incompletedTodos: [],
     loading: false,
     error: null,
   },
@@ -37,6 +64,42 @@ const todoSlice = createSlice({
         }
       })
       .addCase(fetchTodos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchIncompletedTodos.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchIncompletedTodos.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        if (Array.isArray(action.payload.incompleted)) {
+          state.incompletedTodos = action.payload.incompleted;
+        } else {
+          state.incompletedTodos = [];
+          state.error = "No notes found for this user!";
+        }
+      })
+      .addCase(fetchIncompletedTodos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(fetchCompletedTodos.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCompletedTodos.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        if (Array.isArray(action.payload.completed)) {
+          state.completedTodos = action.payload.completed;
+        } else {
+          state.completedTodos = [];
+          state.error = "No Completed notes found for this user!";
+        }
+      })
+      .addCase(fetchCompletedTodos.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
